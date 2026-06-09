@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTickets, useStats, useAuth } from '../../hooks/useTickets'
 import { StatusBadge, PriorityBadge, StatCard, Spinner, Toast } from '../shared'
 import TicketDetail from './TicketDetail'
@@ -61,6 +62,15 @@ export default function Dashboard() {
               fontSize: 12, color: '#6B7280', fontFamily: 'Inter, sans-serif',
             }}
           >Sign out</button>
+          <Link
+            to="/"
+            style={{
+              padding: '5px 12px', border: '1px solid #E5E7EB',
+              borderRadius: 6, background: '#fff', cursor: 'pointer',
+              fontSize: 12, color: '#6B7280', fontFamily: 'Inter, sans-serif',
+              textDecoration: 'none',
+            }}
+          >← Staff portal</Link>
         </div>
       </div>
 
