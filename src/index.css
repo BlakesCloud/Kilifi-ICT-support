@@ -1,0 +1,32 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  color: #111827;
+  background: #F9FAFB;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #1D9E75 !important;
+  box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.12);
+}
+
+a {
+  color: #1D9E75;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
