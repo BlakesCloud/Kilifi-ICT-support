@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import SubmitForm from '../components/staff/SubmitForm'
 import TrackTicket from '../components/staff/TrackTicket'
 
@@ -25,7 +26,7 @@ export default function StaffPortal() {
           <span style={{ fontWeight: 600, fontSize: 15 }}>Kilifi Hospital IT Support</span>
         </div>
 
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {TABS.map(t => (
             <button
               key={t.id}
@@ -42,6 +43,22 @@ export default function StaffPortal() {
               {t.label}
             </button>
           ))}
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, background: '#E5E7EB', margin: '0 6px' }} />
+
+          {/* IT Dashboard link — subtle, staff won't need this */}
+          <Link
+            to="/dashboard"
+            style={{
+              padding: '6px 14px', borderRadius: 6, fontSize: 13,
+              color: '#6B7280', border: '1px solid #E5E7EB',
+              background: '#fff', cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            🔒 IT Dashboard
+          </Link>
         </div>
       </div>
 
