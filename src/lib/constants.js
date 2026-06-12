@@ -9,6 +9,11 @@ export const DEPARTMENTS = [
   'Finance & Billing',
   'Administration',
   'Nursing Station',
+  'Orthopaedic',
+  'Telemedicine',
+  'mortuary',
+  'Newborn Unit',
+  'Triage',
   'Other',
 ]
 
@@ -34,9 +39,9 @@ export const PRIORITY = {
 }
 
 export const STATUS_STYLES = {
-  'Open':        { bg: '#EFF6FF', text: '#1D4ED8', dot: '#3B82F6' },
-  'In Progress': { bg: '#FFFBEB', text: '#92400E', dot: '#F59E0B' },
-  'Resolved':    { bg: '#F0FDF4', text: '#166534', dot: '#22C55E' },
+  'Open':        { bg: '#aecdf6', text: '#1D4ED8', dot: '#3B82F6' },
+  'In Progress': { bg: '#faefc3', text: '#92400E', dot: '#F59E0B' },
+  'Resolved':    { bg: '#d2fade', text: '#166534', dot: '#22C55E' },
 }
 
 export const PRIORITY_STYLES = {
