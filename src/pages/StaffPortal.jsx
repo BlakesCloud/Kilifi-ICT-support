@@ -23,7 +23,7 @@ export default function StaffPortal() {
           <div style={{
             width: 8, height: 8, borderRadius: '50%', background: '#1D9E75',
           }} />
-          <span style={{ fontWeight: 600, fontSize: 15 }}>Kilifi Hospital IT Support</span>
+          <span style={{ fontWeight: 600, fontSize: 15 }}>TATUA IT Support</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

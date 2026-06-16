@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTickets, useStats, useAuth } from '../../hooks/useTickets'
+import { useTickets, useStats, useAuth, useProfile } from '../../hooks/useTickets'
 import { StatusBadge, PriorityBadge, StatCard, Spinner, Toast } from '../shared'
 import TicketDetail from './TicketDetail'
+import ProfilePage from './ProfilePage'
+import { Avatar } from './ProfilePage'
 import Login from './Login'
 
 function timeAgo(iso) {
@@ -20,13 +22,29 @@ const FILTERS = [
   { label: 'Resolved',    value: 'Resolved' },
 ]
 
+// Assigned-to pill shown in ticket table
+function AssigneePill({ name }) {
+  if (!name) return <span style={{ color: '#D1D5DB', fontSize: 12 }}>Unassigned</span>
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      background: '#EFF6FF', color: '#1D4ED8',
+      padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500,
+    }}>
+      🔧 {name}
+    </span>
+  )
+}
+
 export default function Dashboard() {
   const { user, loading: authLoading, signOut } = useAuth()
-  const [filter, setFilter]       = useState('all')
-  const [selected, setSelected]   = useState(null)
-  const [toast, setToast]         = useState({ visible: false, msg: '' })
-  const { tickets, loading, refetch } = useTickets(filter)
-  const { stats }                 = useStats()
+  const { profile }                             = useProfile(user?.id)
+  const [filter, setFilter]                     = useState('all')
+  const [selected, setSelected]                 = useState(null)
+  const [showProfile, setShowProfile]           = useState(false)
+  const [toast, setToast]                       = useState({ visible: false, msg: '' })
+  const { tickets, loading, refetch }           = useTickets(filter)
+  const { stats }                               = useStats()
 
   const showToast = (msg) => {
     setToast({ visible: true, msg })
@@ -36,8 +54,11 @@ export default function Dashboard() {
   if (authLoading) return <Spinner />
   if (!user)       return <Login />
 
+  const displayName = profile?.display_name || profile?.name || user.email
+
   return (
     <div style={{ minHeight: '100vh', background: '#F9FAFB' }}>
+
       {/* Top bar */}
       <div style={{
         background: '#fff', borderBottom: '1px solid #E5E7EB',
@@ -52,42 +73,41 @@ export default function Dashboard() {
             padding: '2px 8px', borderRadius: 12, fontWeight: 500,
           }}>Live</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, color: '#6B7280' }}>{user.email}</span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Profile button */}
           <button
-            onClick={signOut}
+            onClick={() => setShowProfile(true)}
             style={{
-              padding: '5px 12px', border: '1px solid #E5E7EB',
-              borderRadius: 6, background: '#fff', cursor: 'pointer',
-              fontSize: 12, color: '#6B7280', fontFamily: 'Inter, sans-serif',
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '4px 10px 4px 4px',
+              border: '1px solid #E5E7EB', borderRadius: 20,
+              background: '#fff', cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
             }}
-          >Sign out</button>
-          <Link
-            to="/"
-            style={{
-              padding: '5px 12px', border: '1px solid #E5E7EB',
-              borderRadius: 6, background: '#fff', cursor: 'pointer',
-              fontSize: 12, color: '#6B7280', fontFamily: 'Inter, sans-serif',
-              textDecoration: 'none',
-            }}
-          >← Staff portal</Link>
+          >
+            <Avatar url={profile?.avatar_url} name={displayName} size={28} />
+            <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{displayName}</span>
+          </button>
+
+          <button onClick={signOut} style={ghostBtn}>Sign out</button>
+          <Link to="/" style={{ ...ghostBtn, textDecoration: 'none' }}>← Staff portal</Link>
         </div>
       </div>
 
-      <div style={{ padding: '1.5rem', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ padding: '1.5rem', maxWidth: 1150, margin: '0 auto' }}>
+
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: '1.25rem' }}>
-          <StatCard label="Open"          value={stats?.open}        color="#1D4ED8" bg="#EFF6FF" />
-          <StatCard label="In progress"   value={stats?.inProgress}  color="#92400E" bg="#FFFBEB" />
-          <StatCard label="Resolved"      value={stats?.resolved}    color="#166534" bg="#F0FDF4" />
-          <StatCard label="Urgent open"   value={stats?.urgentOpen}  color="#991B1B" bg="#FEF2F2" />
+          <StatCard label="Open"        value={stats?.open}       color="#1D4ED8" bg="#EFF6FF" />
+          <StatCard label="In progress" value={stats?.inProgress} color="#92400E" bg="#FFFBEB" />
+          <StatCard label="Resolved"    value={stats?.resolved}   color="#166534" bg="#F0FDF4" />
+          <StatCard label="Urgent open" value={stats?.urgentOpen} color="#991B1B" bg="#FEF2F2" />
         </div>
 
         {/* Ticket table */}
-        <div style={{
-          background: '#fff', border: '1px solid #E5E7EB',
-          borderRadius: 12, overflow: 'hidden',
-        }}>
+        <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
+
           {/* Toolbar */}
           <div style={{
             padding: '10px 1rem', borderBottom: '1px solid #F3F4F6',
@@ -114,46 +134,49 @@ export default function Dashboard() {
 
           {/* Table */}
           {loading ? <Spinner /> : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: '#F9FAFB' }}>
-                  {['Ticket', 'Category', 'Department', 'Staff', 'Priority', 'Status', 'Time'].map(h => (
-                    <th key={h} style={{
-                      padding: '9px 1rem', textAlign: 'left',
-                      fontSize: 12, fontWeight: 500, color: '#6B7280',
-                      borderBottom: '1px solid #E5E7EB',
-                    }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.length === 0 ? (
-                  <tr><td colSpan={7} style={{ padding: '2.5rem', textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>
-                    No tickets found.
-                  </td></tr>
-                ) : tickets.map(t => (
-                  <tr
-                    key={t.id}
-                    onClick={() => setSelected(selected?.id === t.id ? null : t)}
-                    style={{
-                      cursor: 'pointer',
-                      background: selected?.id === t.id ? '#F0FDF4' : 'transparent',
-                      transition: 'background 0.1s',
-                    }}
-                    onMouseEnter={e => { if (selected?.id !== t.id) e.currentTarget.style.background = '#F9FAFB' }}
-                    onMouseLeave={e => { if (selected?.id !== t.id) e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6', fontWeight: 600 }}>{t.ticket_number}</td>
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6' }}>{t.category}</td>
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6' }}>{t.department}</td>
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6' }}>{t.staff_name}</td>
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6' }}><PriorityBadge priority={t.priority} /></td>
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6' }}><StatusBadge status={t.status} /></td>
-                    <td style={{ padding: '10px 1rem', borderBottom: '1px solid #F3F4F6', color: '#9CA3AF' }}>{timeAgo(t.created_at)}</td>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: '#F9FAFB' }}>
+                    {['Ticket', 'Category', 'Department', 'Staff', 'Priority', 'Status', 'Handled by', 'Time'].map(h => (
+                      <th key={h} style={{
+                        padding: '9px 1rem', textAlign: 'left',
+                        fontSize: 12, fontWeight: 500, color: '#6B7280',
+                        borderBottom: '1px solid #E5E7EB', whiteSpace: 'nowrap',
+                      }}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {tickets.length === 0 ? (
+                    <tr><td colSpan={8} style={{ padding: '2.5rem', textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>
+                      No tickets found.
+                    </td></tr>
+                  ) : tickets.map(t => (
+                    <tr
+                      key={t.id}
+                      onClick={() => setSelected(selected?.id === t.id ? null : t)}
+                      style={{
+                        cursor: 'pointer',
+                        background: selected?.id === t.id ? '#F0FDF4' : 'transparent',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => { if (selected?.id !== t.id) e.currentTarget.style.background = '#F9FAFB' }}
+                      onMouseLeave={e => { if (selected?.id !== t.id) e.currentTarget.style.background = selected?.id === t.id ? '#F0FDF4' : 'transparent' }}
+                    >
+                      <td style={td}><strong>{t.ticket_number}</strong></td>
+                      <td style={td}>{t.category}</td>
+                      <td style={td}>{t.department}</td>
+                      <td style={td}>{t.staff_name}</td>
+                      <td style={td}><PriorityBadge priority={t.priority} /></td>
+                      <td style={td}><StatusBadge status={t.status} /></td>
+                      <td style={td}><AssigneePill name={t.assigned_to_name} /></td>
+                      <td style={{ ...td, color: '#9CA3AF' }}>{timeAgo(t.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -161,6 +184,7 @@ export default function Dashboard() {
         {selected && (
           <TicketDetail
             ticket={selected}
+            user={user}
             onClose={() => setSelected(null)}
             onSaved={() => {
               setSelected(null)
@@ -171,7 +195,24 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Profile modal */}
+      {showProfile && (
+        <ProfilePage user={user} onClose={() => setShowProfile(false)} />
+      )}
+
       <Toast message={toast.msg} visible={toast.visible} />
     </div>
   )
+}
+
+const ghostBtn = {
+  padding: '5px 12px', border: '1px solid #E5E7EB',
+  borderRadius: 6, background: '#fff', cursor: 'pointer',
+  fontSize: 12, color: '#6B7280', fontFamily: 'Inter, sans-serif',
+}
+
+const td = {
+  padding: '10px 1rem',
+  borderBottom: '1px solid #F3F4F6',
+  verticalAlign: 'middle',
 }

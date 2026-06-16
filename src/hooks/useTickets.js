@@ -49,7 +49,7 @@ export function useTrackTicket() {
     try {
       const { data, error: err } = await supabase
         .from('tickets')
-        .select('ticket_number, status, category, department, priority, created_at, resolution_note')
+        .select('ticket_number, status, category, department, priority, created_at, resolution_note, assigned_to_name')
         .eq('ticket_number', ticketNumber.toUpperCase())
         .single()
 
@@ -93,10 +93,8 @@ export function useTickets(statusFilter) {
     }
   }, [statusFilter])
 
-  // Initial load
   useEffect(() => { fetchTickets() }, [fetchTickets])
 
-  // Realtime subscription — new tickets appear instantly on dashboard
   useEffect(() => {
     const channel = supabase
       .channel('tickets-changes')
@@ -104,14 +102,13 @@ export function useTickets(statusFilter) {
         fetchTickets()
       })
       .subscribe()
-
     return () => supabase.removeChannel(channel)
   }, [fetchTickets])
 
   return { tickets, loading, error, refetch: fetchTickets }
 }
 
-// ── IT: update a ticket (status + resolution note) ──────────────────────────
+// ── IT: update a ticket (status + note + assignment) ────────────────────────
 export function useUpdateTicket() {
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState(null)
@@ -170,6 +167,90 @@ export function useStats() {
   }, [fetchStats])
 
   return { stats, loading }
+}
+
+// ── IT: fetch all IT users (for assignment dropdown) ─────────────────────────
+export function useITUsers() {
+  const [itUsers,  setITUsers]  = useState([])
+  const [loading,  setLoading]  = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from('it_users')
+      .select('id, name, display_name, role, avatar_url')
+      .then(({ data }) => {
+        setITUsers(data || [])
+        setLoading(false)
+      })
+  }, [])
+
+  return { itUsers, loading }
+}
+
+// ── IT: profile — fetch + update + avatar upload ─────────────────────────────
+export function useProfile(userId) {
+  const [profile,  setProfile]  = useState(null)
+  const [loading,  setLoading]  = useState(true)
+  const [saving,   setSaving]   = useState(false)
+  const [error,    setError]    = useState(null)
+
+  const fetchProfile = useCallback(async () => {
+    if (!userId) return
+    const { data } = await supabase
+      .from('it_users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    setProfile(data)
+    setLoading(false)
+  }, [userId])
+
+  useEffect(() => { fetchProfile() }, [fetchProfile])
+
+  const updateProfile = async (updates) => {
+    setSaving(true)
+    setError(null)
+    const { error: err } = await supabase
+      .from('it_users')
+      .update(updates)
+      .eq('id', userId)
+
+    if (err) { setError(err.message); setSaving(false); return false }
+    await fetchProfile()
+    setSaving(false)
+    return true
+  }
+
+  const uploadAvatar = async (file) => {
+    setSaving(true)
+    setError(null)
+    try {
+      const ext  = file.name.split('.').pop()
+      const path = `${userId}/avatar.${ext}`
+
+      const { error: upErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true })
+
+      if (upErr) throw upErr
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(path)
+
+      // Bust cache with timestamp
+      const url = `${publicUrl}?t=${Date.now()}`
+      await updateProfile({ avatar_url: url })
+      return url
+    } catch (err) {
+      setError(err.message)
+      return null
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return { profile, loading, saving, error, updateProfile, uploadAvatar, refetch: fetchProfile }
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────

@@ -19,12 +19,12 @@ export const DEPARTMENTS = [
 
 export const CATEGORIES = [
   { id: 'login',    label: 'Login / Account',         icon: '👤', description: 'Password issues, account locked, can\'t log in' },
-  { id: 'hardware', label: 'Hardware',                 icon: '🖥️', description: 'PC, printer, mouse, keyboard, screen' },
+  { id: 'hardware', label: 'Hardware(Mitambo)',                 icon: '🖥️', description: 'PC, printer, mouse, keyboard, screen' },
   { id: 'software', label: 'Software / App',           icon: '📦', description: 'App won\'t open, installation, crashes' },
   { id: 'network',  label: 'Internet / Network',       icon: '📡', description: 'No internet, slow connection, WiFi' },
   { id: 'email',    label: 'Email',                    icon: '✉️', description: 'Outlook setup, can\'t send or receive' },
   { id: 'emr',      label: 'Hospital System',          icon: '🏥', description: 'KenyaEMR, DHIS2, NHIF portal issues' },
-  { id: 'other',    label: 'Other',                    icon: '❓', description: 'Anything else' },
+  { id: 'other',    label: 'Other (Zinginezo)',                    icon: '❓', description: 'Anything else' },
 ]
 
 export const STATUS = {
@@ -45,6 +45,6 @@ export const STATUS_STYLES = {
 }
 
 export const PRIORITY_STYLES = {
-  'Normal': { bg: '#F3F4F6', text: '#374151' },
-  'Urgent': { bg: '#FEF2F2', text: '#991B1B' },
+  'Normal': { bg: '#c8ebdc', text: '#374151' },
+  'Urgent': { bg: '#ecc7c7', text: '#991B1B' },
 }

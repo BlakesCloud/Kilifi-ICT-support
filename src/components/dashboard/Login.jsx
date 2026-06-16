@@ -37,7 +37,7 @@ export default function Login() {
             fontSize: 22, margin: '0 auto 1rem',
           }}>🏥</div>
           <h1 style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>IT staff login</h1>
-          <p style={{ fontSize: 13, color: '#6B7280' }}>Kilifi Hospital IT Support Dashboard</p>
+          <p style={{ fontSize: 13, color: '#6B7280' }}>TATUA IT Support Dashboard</p>
         </div>
 
         <ErrorMessage message={error} />

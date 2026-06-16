@@ -23,7 +23,7 @@ function Row({ label, children }) {
 }
 
 export default function TrackTicket() {
-  const [input, setInput]          = useState('')
+  const [input, setInput] = useState('')
   const { ticket, track, loading, error } = useTrackTicket()
 
   const handleTrack = (e) => {
@@ -72,6 +72,7 @@ export default function TrackTicket() {
           marginTop: '1.25rem', border: '1px solid #E5E7EB',
           borderRadius: 10, overflow: 'hidden',
         }}>
+          {/* Header */}
           <div style={{
             background: '#F9FAFB', padding: '12px 16px',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -81,16 +82,31 @@ export default function TrackTicket() {
             <StatusBadge status={ticket.status} />
           </div>
 
+          {/* Rows */}
           <div style={{ padding: '0 16px' }}>
             <Row label="Category">{ticket.category}</Row>
             <Row label="Department">{ticket.department}</Row>
             <Row label="Priority"><PriorityBadge priority={ticket.priority} /></Row>
             <Row label="Submitted">{timeAgo(ticket.created_at)}</Row>
+
+            {/* Assigned technician — shown once someone has picked it up */}
+            {ticket.assigned_to_name && (
+              <Row label="Handled by">
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: '#EFF6FF', color: '#1D4ED8',
+                  padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500,
+                }}>
+                  🔧 {ticket.assigned_to_name}
+                </span>
+              </Row>
+            )}
           </div>
 
+          {/* Resolution note */}
           {ticket.resolution_note && (
             <div style={{
-              margin: '0 16px 16px', padding: '12px',
+              margin: '12px 16px 16px', padding: '12px',
               background: '#F0FDF4', borderRadius: 8,
               border: '1px solid #BBF7D0',
             }}>
@@ -100,6 +116,18 @@ export default function TrackTicket() {
               <p style={{ fontSize: 13, color: '#166534', lineHeight: 1.5 }}>
                 {ticket.resolution_note}
               </p>
+            </div>
+          )}
+
+          {/* Pending nudge — shown when open and no one assigned yet */}
+          {ticket.status === 'Open' && !ticket.assigned_to_name && (
+            <div style={{
+              margin: '12px 16px 16px', padding: '10px 12px',
+              background: '#FFFBEB', borderRadius: 8,
+              border: '1px solid #FDE68A',
+              fontSize: 13, color: '#92400E',
+            }}>
+              ⏳ Your request is in the queue. The IT team will attend to you shortly.
             </div>
           )}
         </div>
